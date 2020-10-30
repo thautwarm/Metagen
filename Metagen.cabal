@@ -1,0 +1,81 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: f9cff28ad82b0ce78d3b0bb7acca0cb9e0247c97df286b30b96bacec039729a5
+
+name:           Metagen
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/Metagen#readme>
+homepage:       https://github.com/github.com/thautwarm#readme
+bug-reports:    https://github.com/github.com/thautwarm/issues
+author:         Taine Zhao
+maintainer:     twshere@outlook.com
+copyright:      2020 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/github.com/thautwarm
+  subdir: Metagen
+
+library
+  exposed-modules:
+      Metagen
+      Metagen.MetaParsePatch
+      Metagen.Templates
+      Metagen.TH
+  other-modules:
+      Paths_Metagen
+  hs-source-dirs:
+      src
+  default-extensions: ViewPatterns DeriveGeneric DeriveFunctor DeriveTraversable LambdaCase TemplateHaskell QuasiQuotes DuplicateRecordFields StandaloneDeriving ExistentialQuantification MultiParamTypeClasses NamedFieldPuns PartialTypeSignatures FlexibleInstances FlexibleContexts KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
+  build-depends:
+      base >=4.7 && <5
+    , haskell-src-exts
+    , haskell-src-meta
+    , mtl
+    , template-haskell
+  default-language: Haskell2010
+
+executable Metagen-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_Metagen
+  hs-source-dirs:
+      app
+  default-extensions: ViewPatterns DeriveGeneric DeriveFunctor DeriveTraversable LambdaCase TemplateHaskell QuasiQuotes DuplicateRecordFields StandaloneDeriving ExistentialQuantification MultiParamTypeClasses NamedFieldPuns PartialTypeSignatures FlexibleInstances FlexibleContexts KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Metagen
+    , base >=4.7 && <5
+    , haskell-src-exts
+    , haskell-src-meta
+    , mtl
+    , template-haskell
+  default-language: Haskell2010
+
+test-suite Metagen-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_Metagen
+  hs-source-dirs:
+      test
+  default-extensions: ViewPatterns DeriveGeneric DeriveFunctor DeriveTraversable LambdaCase TemplateHaskell QuasiQuotes DuplicateRecordFields StandaloneDeriving ExistentialQuantification MultiParamTypeClasses NamedFieldPuns PartialTypeSignatures FlexibleInstances FlexibleContexts KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Metagen
+    , base >=4.7 && <5
+    , haskell-src-exts
+    , haskell-src-meta
+    , mtl
+    , template-haskell
+  default-language: Haskell2010
