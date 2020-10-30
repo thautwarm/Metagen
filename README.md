@@ -20,4 +20,4 @@ main = do
   putStrLn "FLam"
 ```
 
-In the this package, a Y* transformer for extensible Quatation rewritting is provided, which considerably simplifies the use of Template Haskell. See `Metagen.TH` for implementation, and `Metagen.Templates` for the usage.
+In the this package, a Y*-style transformer for extensible Quotation rewritting is provided, which considerably simplifies the use of Template Haskell. See `Metagen.TH` for implementation, and `Metagen.Templates` for the usage.
