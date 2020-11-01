@@ -4,6 +4,7 @@ module Metagen.Python
   , assign, cond
   , py_print
   , call, generate
+  , PIter(..), each
   )
 where
 
@@ -57,7 +58,7 @@ instance ToPyCode (PyExp a) where
         xs >>= \(k, v) -> [toPyCode ns k, ": ", toPyCode ns v]
       PyTup l -> printf "(%s)%" $ toPyCode ns l
       GS n -> n
-      LS n -> fst (ns !! n)
+      LS n -> "_lc_" ++ fst (ns !! n)
 
 type DefUse = [(String, Bool)]
 data PyState
@@ -117,6 +118,10 @@ instance MkC Double where
 
 instance MkC String where
   mkc = PyStr
+
+
+instance MkC Bool where
+  mkc = PyBool
 
 updateL :: [a] -> Int -> (a -> a) -> [a]
 updateL (x:xs) 0 f = f x : xs
@@ -180,6 +185,26 @@ call f a = do
   a <- use a
   return $ PyCall f a
 
+class PIter a e | a -> e where
+  getIter :: PyExp a -> PyExp a
+
+instance PIter (PList e) e where
+  getIter = id
+
+instance PIter (PSet e) e where
+  getIter = id
+
+each :: PIter a e => PyExp a -> (PyExp e -> PyMState any) -> PyMState ()
+each iterable applyEach = do
+  iterVar <- mksymbol "iter"
+  iterable <- use (getIter iterable)
+  pushCode $ \defuse ->
+    printf "for %s in %s:"
+           (toPyCode defuse iterVar)
+           (toPyCode defuse iterable)
+  indent
+  applyEach iterVar
+  dedent
 
 generate :: PyMState a -> (a, String)
 generate m =

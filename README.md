@@ -27,18 +27,20 @@ In the package, a Y*-style transformer for extensible Quotation rewritting is pr
 
 ```haskell
 testPy = do
-    cond (PyBool True)
-        do
-            call py_print (PyStr "hello true")
-        do
-            call py_print (PyStr "hello false")
+  let xs = PyList [mkc True, mkc False]
+  each xs $ \v -> cond v
+    do
+      call py_print (PyStr "hello true")
+    do
+      call py_print (PyStr "hello false")
 ```
 
 generates
 
 ```python
-if True:
-  print("hello true")
-else:
-  print("hello false")
+for _lc_if in [True, False]:
+  if _lc_if:
+    _lc_iter = print("hello true")
+  else:
+    _lc_iter = print("hello false")
 ```

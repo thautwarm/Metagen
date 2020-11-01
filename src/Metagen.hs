@@ -8,11 +8,12 @@ import           Metagen.Python
 
 
 testPy = do
-    cond (PyBool True)
+    let xs = PyList [mkc True, mkc False]
+    each xs $ \v -> cond v
         do
-            call py_print (PyStr "hello true")
+          call py_print (PyStr "hello true")
         do
-            call py_print (PyStr "hello false")
+          call py_print (PyStr "hello false")
 
 -- for test only
 main = do
