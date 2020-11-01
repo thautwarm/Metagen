@@ -2,12 +2,12 @@
 -- 'nat': building expressions or types for dependent natural numbers
 -- 'hl': building  expressions or types for heterogeneous lists
 module Metagen.Templates
-    (nat, hl)
+    (nat, hl, sl)
 where
 
-import           Language.Haskell.TH         as TH
-import           Language.Haskell.TH.Quote   as TH
-import           Language.Haskell.TH.Syntax  as TH
+import           Language.Haskell.TH        as TH
+import           Language.Haskell.TH.Quote  as TH
+import           Language.Haskell.TH.Syntax as TH
 import           Metagen.TH
 
 nat :: QuasiQuoter
@@ -42,7 +42,6 @@ hl = mkSimpleQQ (parseExpAndMap exp' . wrap_bracket) (parseTypeAndMap typ' . wra
     nilName = mkName "HNil"
     consName = mkName "HCons"
 
-    
     self = Self exp' typ'
 
     mkHListExp = \case
@@ -58,4 +57,22 @@ hl = mkSimpleQQ (parseExpAndMap exp' . wrap_bracket) (parseTypeAndMap typ' . wra
         AppT (AppT (ConT consName) (vType self hd)) (vType self tl)
       PromotedNilT -> ConT nilName
       a -> gVisitType self a
-  
+
+
+sl :: QuasiQuoter
+sl = mkSimpleQQ (parseExpAndMap exp' . wrap_bracket) (parseTypeAndMap typ')
+  where
+    nilName = mkName "SNil"
+    consName = mkName "SCons"
+
+    self = Self exp' typ'
+
+    mkSListExp = \case
+      [] -> ConE nilName
+      hd:tl -> AppE (AppE (ConE consName) (vExp self hd)) (mkSListExp tl)
+
+    exp' = \case
+      ListE xs -> mkSListExp xs
+      a -> gVisitExp self a
+
+    typ' = error "not handled"

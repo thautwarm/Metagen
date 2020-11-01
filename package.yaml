@@ -30,21 +30,23 @@ library:
   source-dirs: src
 
 default-extensions:
-- ViewPatterns
 - DeriveGeneric
 - DeriveFunctor
 - DeriveTraversable
+- DuplicateRecordFields
+- ExistentialQuantification
+- FlexibleInstances
+- FlexibleContexts
+- GADTs
 - LambdaCase
 - TemplateHaskell
 - QuasiQuotes
-- DuplicateRecordFields
 - StandaloneDeriving
-- ExistentialQuantification
 - MultiParamTypeClasses
+- MultiWayIf
 - NamedFieldPuns
 - PartialTypeSignatures
-- FlexibleInstances
-- FlexibleContexts
+- ViewPatterns
 - KindSignatures
 - Rank2Types
 - TypeApplications
