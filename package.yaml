@@ -41,6 +41,7 @@ default-extensions:
 - LambdaCase
 - TemplateHaskell
 - QuasiQuotes
+- BlockArguments
 - StandaloneDeriving
 - MultiParamTypeClasses
 - MultiWayIf

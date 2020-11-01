@@ -1,4 +1,10 @@
 module Metagen.Python
+  ( MkC(..), PyExp(..)
+  , mksymbol, use
+  , assign, cond
+  , py_print
+  , call, generate
+  )
 where
 
 import           Control.Monad.State.Lazy
@@ -27,6 +33,7 @@ data PyExp a where
   PyCall :: PyExp (a -> b) -> PyExp a -> PyExp b
   PyInt  :: Int -> PyExp Int
   PyStr  :: String -> PyExp String
+  PyBool :: Bool -> PyExp Bool
   PyNum  :: Double -> PyExp Double
   PyList :: [PyExp a] -> PyExp (PList a)
   PySet  :: [PyExp a] -> PyExp (PSet a)
@@ -37,6 +44,8 @@ data PyExp a where
 
 instance ToPyCode (PyExp a) where
   toPyCode ns = \case
+      PyBool True -> "True"
+      PyBool False -> "False"
       PyCall f a -> printf "%s(%s)" (toPyCode ns f) (toPyCode ns a)
       PyInt i -> printf "%d" i
       PyNum f -> printf "%f" f
@@ -50,10 +59,11 @@ instance ToPyCode (PyExp a) where
       GS n -> n
       LS n -> fst (ns !! n)
 
+type DefUse = [(String, Bool)]
 data PyState
   = PyState
-  { code   :: [(String, Bool)] -> [String]
-  , vregs  :: [(String, Bool)] -- [(name, isUsed)]
+  { code   :: DefUse -> [String]
+  , vregs  :: DefUse -- [(name, isUsed)]
   , layout :: String
   }
 
@@ -71,6 +81,9 @@ mksymbol s = do
   n <- allocate_id s
   return (LS n)
 
+isUsed :: Int -> DefUse -> Bool
+isUsed n defuse = snd (defuse !! n)
+
 use :: PyExp a -> PyMState (PyExp a)
 use a = do
   st <- get
@@ -83,15 +96,13 @@ use a = do
     PyCall _ _ ->
       do
         n <- allocate_id "call"      
-        let PyState {layout, code} = st
         let pysym = LS n
-        let code' :: [(String, Bool)] -> [String]
-            code' defuse
-              | snd (defuse !! n) =
-                  printf "%s%s" layout (toPyCode defuse pysym) (toPyCode defuse a):tl
-              | otherwise = printf "%s%s" layout (toPyCode defuse a):tl
-              where tl = code defuse
-        put $ st {code = code'}
+        appendCode $ \defuse ->
+          if | isUsed n defuse ->
+               let target = toPyCode defuse pysym
+                   value  = toPyCode defuse a
+               in  [printf "%s = %s" target value]
+             | otherwise -> [printf "%s" (toPyCode defuse a)]
         return pysym
     a -> return a
 
@@ -116,14 +127,61 @@ indentInc :: Int -> PyMState ()
 indentInc n = do
   st <- get
   if  | n == 0 -> return ()
-      | n < 0  -> put $ st {layout = drop n $ layout st}
+      | n < 0  -> put $ st {layout = drop (-n) $ layout st}
       | n > 0  -> put $ st {layout = replicate n ' ' ++ layout st}
 
-INDENT = indentInc 2
-DEDENT = indentInc -2
+indent = indentInc 2
+dedent = indentInc (-2)
+
+appendCode :: (DefUse -> [String]) -> PyMState ()
+appendCode f = state $ \st ->
+  ((), st {code = \defuse -> map (layout st ++) (f defuse) ++ code st defuse})
+
+pushCode :: (DefUse -> String) -> PyMState ()
+pushCode f = state $ \st ->
+  ((), st {code = \defuse -> (layout st ++ f defuse) : code st defuse})
+
 
 assign :: PyExp a -> PyExp a -> PyMState ()
-assign tag value = case tag of
-  LS _ ->
-      
-  
+assign target value = appendCode $ \defuse ->
+  let target' = toPyCode defuse target
+      value'  = toPyCode defuse value
+  in
+  case target of
+    LS i | isUsed i defuse -> [printf "%s = %s" target' value']
+    LS _ -> [value']
+    GS _ -> [printf "%s = %s" target' value']
+    _ -> error "invalid assignments"
+
+cond :: PyExp Bool -> PyMState (PyExp a) -> PyMState (PyExp a) -> PyMState (PyExp a)
+cond expr arm1 arm2 = do
+  test <- use expr
+  ret_slot <- allocate_id "if"
+  let ret = LS ret_slot
+  pushCode $ \defuse -> (printf "if %s:" $ toPyCode defuse test)
+  indent
+  arm1 <- arm1
+  assign ret arm1
+  dedent
+  pushCode $ \defuse -> "else:"
+  indent
+  arm2 <- arm2
+  assign ret arm2
+  dedent
+  return ret
+
+py_print :: forall a. PyExp (a -> ())
+py_print = GS "print"
+
+
+call :: PyExp (a -> b) -> PyExp a -> PyMState (PyExp b)
+call f a = do
+  f <- use f
+  a <- use a
+  return $ PyCall f a
+
+
+generate :: PyMState a -> (a, String)
+generate m =
+  let (a, PyState {code, vregs}) = runState m emptyPyState
+  in (a, intercalate "\n" $ reverse $ code vregs)

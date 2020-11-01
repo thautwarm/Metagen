@@ -4,7 +4,15 @@ module Metagen
 
 import           Metagen.Infr
 import           Metagen.Templates
+import           Metagen.Python
 
+
+testPy = do
+    cond (PyBool True)
+        do
+            call py_print (PyStr "hello true")
+        do
+            call py_print (PyStr "hello false")
 
 -- for test only
 main = do
@@ -18,3 +26,4 @@ main = do
       hlist' = hlist
   print $ hlist' ! [nat|3|]
   putStrLn "FLam"
+  putStrLn $ snd (generate testPy)

@@ -21,3 +21,24 @@ main = do
 ```
 
 In the package, a Y*-style transformer for extensible Quotation rewritting is provided, which considerably simplifies the use of Template Haskell. See `Metagen.TH` for implementation, and `Metagen.Templates` for the usage.
+
+
+## Python Code Generator
+
+```haskell
+testPy = do
+    cond (PyBool True)
+        do
+            call py_print (PyStr "hello true")
+        do
+            call py_print (PyStr "hello false")
+```
+
+generates
+
+```python
+if True:
+  print("hello true")
+else:
+  print("hello false")
+```

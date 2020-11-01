@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ff3ce0ab1768569ca7f37d2143f9ad78bd49d99ea3b6161cec23c420a5439d70
+-- hash: adb346ed0a510c142580fa0471fa369dacee16e121326ee304c728be77bf2a09
 
 name:           Metagen
 version:        0.1.0.0
@@ -38,7 +38,7 @@ library
       Paths_Metagen
   hs-source-dirs:
       src
-  default-extensions: DeriveGeneric DeriveFunctor DeriveTraversable DuplicateRecordFields ExistentialQuantification FlexibleInstances FlexibleContexts GADTs LambdaCase TemplateHaskell QuasiQuotes StandaloneDeriving MultiParamTypeClasses MultiWayIf NamedFieldPuns PartialTypeSignatures ViewPatterns KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
+  default-extensions: DeriveGeneric DeriveFunctor DeriveTraversable DuplicateRecordFields ExistentialQuantification FlexibleInstances FlexibleContexts GADTs LambdaCase TemplateHaskell QuasiQuotes BlockArguments StandaloneDeriving MultiParamTypeClasses MultiWayIf NamedFieldPuns PartialTypeSignatures ViewPatterns KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
   build-depends:
       base >=4.7 && <5
     , haskell-src-exts
@@ -53,7 +53,7 @@ executable Metagen-exe
       Paths_Metagen
   hs-source-dirs:
       app
-  default-extensions: DeriveGeneric DeriveFunctor DeriveTraversable DuplicateRecordFields ExistentialQuantification FlexibleInstances FlexibleContexts GADTs LambdaCase TemplateHaskell QuasiQuotes StandaloneDeriving MultiParamTypeClasses MultiWayIf NamedFieldPuns PartialTypeSignatures ViewPatterns KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
+  default-extensions: DeriveGeneric DeriveFunctor DeriveTraversable DuplicateRecordFields ExistentialQuantification FlexibleInstances FlexibleContexts GADTs LambdaCase TemplateHaskell QuasiQuotes BlockArguments StandaloneDeriving MultiParamTypeClasses MultiWayIf NamedFieldPuns PartialTypeSignatures ViewPatterns KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Metagen
@@ -71,7 +71,7 @@ test-suite Metagen-test
       Paths_Metagen
   hs-source-dirs:
       test
-  default-extensions: DeriveGeneric DeriveFunctor DeriveTraversable DuplicateRecordFields ExistentialQuantification FlexibleInstances FlexibleContexts GADTs LambdaCase TemplateHaskell QuasiQuotes StandaloneDeriving MultiParamTypeClasses MultiWayIf NamedFieldPuns PartialTypeSignatures ViewPatterns KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
+  default-extensions: DeriveGeneric DeriveFunctor DeriveTraversable DuplicateRecordFields ExistentialQuantification FlexibleInstances FlexibleContexts GADTs LambdaCase TemplateHaskell QuasiQuotes BlockArguments StandaloneDeriving MultiParamTypeClasses MultiWayIf NamedFieldPuns PartialTypeSignatures ViewPatterns KindSignatures Rank2Types TypeApplications FunctionalDependencies PolyKinds UndecidableInstances
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Metagen
