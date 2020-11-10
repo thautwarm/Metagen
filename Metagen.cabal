@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: adb346ed0a510c142580fa0471fa369dacee16e121326ee304c728be77bf2a09
+-- hash: 3fa8ca4843497b09f360f49725944d6a15a6850d3e5315958b15bf8469843986
 
 name:           Metagen
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Metagen.Infr
       Metagen.MetaParsePatch
       Metagen.Python
+      Metagen.Python.Prelude
       Metagen.Templates
       Metagen.TH
   other-modules:

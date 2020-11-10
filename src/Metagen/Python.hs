@@ -1,12 +1,4 @@
-module Metagen.Python
-  ( MkC(..), PyExp(..)
-  , mksymbol, use
-  , assign, cond
-  , py_print
-  , call, generate
-  , PIter(..), each
-  )
-where
+module Metagen.Python where
 
 import           Control.Monad.State.Lazy
 import           Data.List                (intercalate)
@@ -43,8 +35,15 @@ data PyExp a where
   GS :: String -> PyExp a
   LS :: Int -> PyExp a
 
+  PyIn :: PContainer c e => PyExp e -> PyExp c -> PyExp Bool
+  PyIndex :: PSequence c i e => PyExp c -> PyExp i -> PyExp e
+  PyAnd :: PyExp Bool -> PyExp Bool -> PyExp Bool
+  PyOr :: PyExp Bool -> PyExp Bool -> PyExp Bool
+
 instance ToPyCode (PyExp a) where
   toPyCode ns = \case
+      PyOr a b -> printf "(%s or %s)" (toPyCode ns a) (toPyCode ns b)
+      PyAnd a b -> printf "(%s and %s)" (toPyCode ns a) (toPyCode ns b)
       PyBool True -> "True"
       PyBool False -> "False"
       PyCall f a -> printf "%s(%s)" (toPyCode ns f) (toPyCode ns a)
@@ -58,7 +57,7 @@ instance ToPyCode (PyExp a) where
         xs >>= \(k, v) -> [toPyCode ns k, ": ", toPyCode ns v]
       PyTup l -> printf "(%s)%" $ toPyCode ns l
       GS n -> n
-      LS n -> "_lc_" ++ fst (ns !! n)
+      LS n -> printf "_lc_%d_%s" (n) (fst (ns !! n))
 
 type DefUse = [(String, Bool)]
 data PyState
@@ -96,7 +95,7 @@ use a = do
         return a
     PyCall _ _ ->
       do
-        n <- allocate_id "call"      
+        n <- allocate_id "call"
         let pysym = LS n
         appendCode $ \defuse ->
           if | isUsed n defuse ->
@@ -119,14 +118,13 @@ instance MkC Double where
 instance MkC String where
   mkc = PyStr
 
-
 instance MkC Bool where
   mkc = PyBool
 
 updateL :: [a] -> Int -> (a -> a) -> [a]
 updateL (x:xs) 0 f = f x : xs
 updateL (x:xs) n f = x : updateL xs n f
-updateL _ _ _ = error "invalid index"
+updateL _ _ _      = error "invalid index"
 
 indentInc :: Int -> PyMState ()
 indentInc n = do
@@ -154,9 +152,9 @@ assign target value = appendCode $ \defuse ->
   in
   case target of
     LS i | isUsed i defuse -> [printf "%s = %s" target' value']
-    LS _ -> [value']
-    GS _ -> [printf "%s = %s" target' value']
-    _ -> error "invalid assignments"
+    LS _                   -> [value']
+    GS _                   -> [printf "%s = %s" target' value']
+    _                      -> error "invalid assignments"
 
 cond :: PyExp Bool -> PyMState (PyExp a) -> PyMState (PyExp a) -> PyMState (PyExp a)
 cond expr arm1 arm2 = do
@@ -175,24 +173,23 @@ cond expr arm1 arm2 = do
   dedent
   return ret
 
-py_print :: forall a. PyExp (a -> ())
-py_print = GS "print"
-
-
 call :: PyExp (a -> b) -> PyExp a -> PyMState (PyExp b)
 call f a = do
   f <- use f
   a <- use a
   return $ PyCall f a
 
+generate :: PyMState a -> (a, String)
+generate m =
+  let (a, PyState {code, vregs}) = runState m emptyPyState
+  in (a, intercalate "\n" $ reverse $ code vregs)
+
 class PIter a e | a -> e where
   getIter :: PyExp a -> PyExp a
-
-instance PIter (PList e) e where
   getIter = id
+instance PIter (PList e) e
 
-instance PIter (PSet e) e where
-  getIter = id
+instance PIter (PSet e) e
 
 each :: PIter a e => PyExp a -> (PyExp e -> PyMState any) -> PyMState ()
 each iterable applyEach = do
@@ -206,7 +203,11 @@ each iterable applyEach = do
   applyEach iterVar
   dedent
 
-generate :: PyMState a -> (a, String)
-generate m =
-  let (a, PyState {code, vregs}) = runState m emptyPyState
-  in (a, intercalate "\n" $ reverse $ code vregs)
+class PContainer a e | a -> e where
+  pyIn :: PyExp e -> PyExp a -> PyExp Bool
+  pyIn = PyIn
+
+class PSequence a i e | a i -> e where
+  pyIndex :: PyExp a -> PyExp i -> PyExp e
+  pyIndex = PyIndex
+

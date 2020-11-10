@@ -3,17 +3,17 @@ module Metagen
     ) where
 
 import           Metagen.Infr
-import           Metagen.Templates
 import           Metagen.Python
-
+import qualified Metagen.Python.Prelude as Py
+import           Metagen.Templates
 
 testPy = do
     let xs = PyList [mkc True, mkc False]
     each xs $ \v -> cond v
         do
-          call py_print (PyStr "hello true")
+          call Py.print (PyStr "hello true")
         do
-          call py_print (PyStr "hello false")
+          call Py.print (PyStr "hello false")
 
 -- for test only
 main = do
